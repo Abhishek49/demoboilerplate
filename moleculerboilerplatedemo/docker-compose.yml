@@ -1,0 +1,99 @@
+version: "3.2"
+
+services:
+
+  first:
+    build:
+      context: .
+    image: moleculerboilerplatedemo
+    container_name: moleculerboilerplatedemo-api
+    env_file: docker-compose.env
+    environment:
+      SERVICES: first
+      PORT: 3000
+    depends_on:
+      - nats
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=api"
+      - "traefik.port=3000"
+      - "traefik.frontend.entryPoints=http"
+      - "traefik.frontend.rule=PathPrefix:/"
+    networks:
+      - internal
+
+  mod1:
+    build:
+      context: .
+    image: moleculerboilerplatedemo
+    container_name: moleculerboilerplatedemo-mod1
+    env_file: docker-compose-mod1.env
+    environment:
+      SERVICES: mod1
+    labels:
+      - "traefik.enable=false"
+    depends_on:
+      - nats
+    networks:
+      - internal
+
+  mod2:
+    build:
+      context: .
+    image: moleculerboilerplatedemo
+    container_name: moleculerboilerplatedemo-mod2
+    env_file: docker-compose-mod2.env
+    environment:
+      SERVICES: mod2
+    labels:
+      - "traefik.enable=false"
+    depends_on:
+      - nats
+    networks:
+      - internal
+
+  mod3:
+    build:
+      context: .
+    image: moleculerboilerplatedemo
+    container_name: moleculerboilerplatedemo-mod3
+    env_file: docker-compose-mod3.env
+    environment:
+      SERVICES: mod3
+    labels:
+    - "traefik.enable=false"
+    depends_on:
+    - nats
+    networks:
+    - internal
+
+  nats:
+    image: nats
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - internal
+
+  traefik:
+    image: traefik:1.7
+    container_name: traefik
+    command:
+      - "--api"
+      - "--docker"
+      - "--docker.watch"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=traefik"
+      - "traefik.port=8080"
+    ports:
+      - 3000:80
+      - 3001:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/traefik.toml
+    networks:
+      - internal
+      - default
+
+networks:
+  internal:

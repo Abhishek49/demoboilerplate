@@ -1,0 +1,27 @@
+version: "3.2"
+
+services:
+  greeter:
+    build:
+      context: .
+    image: moleculer-demo2
+    container_name: moleculer-demo2-greeter
+    env_file: docker-compose.env
+    environment:
+      SERVICES: greeter
+    labels:
+      - "traefik.enable=false"
+    depends_on:
+      - redis
+    networks:
+      - internal
+
+  redis:
+    image: redis:alpine
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - internal
+
+networks:
+  internal:
